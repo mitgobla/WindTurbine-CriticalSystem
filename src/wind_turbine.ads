@@ -5,6 +5,7 @@ with SPARK.Text_IO; use SPARK.Text_IO;
 package Wind_Turbine is
 
    -- This is the fastest wind speed (mph) ever recorded during the passage of Tropical Cyclone Olivia on 10 April 1996
+   -- It is used as a maximum value for sensor input, as we can assume we will never see values higher than this.
    -- https://en.wikipedia.org/wiki/Wind_speed#Highest_speed
    Maximum_Wind_Speed : constant Integer := 253;
 
@@ -18,13 +19,14 @@ package Wind_Turbine is
    Shutdown_Wind_Speed : constant Integer := 55;
 
    -- The typical turbine will only allow itself to start rotating if the wind is over this speed (mph)
+   -- This is due to it needing enough kinetic energy to complete a rotation and produce useful power
    -- https://www.energy.gov/eere/wind/how-wind-turbine-works-text-version
    Startup_Wind_Speed : constant Integer := 7;
 
    type Speed_Range is new Integer range 0 .. Maximum_Wind_Speed;
 
    -- On the tips of wind turbines, they can rotate up to 90 degrees to stall the blades after a few rotations.
-   -- The aerodynamic braking system is the usual way of stopping a wind turbine
+   -- The aerodynamic braking system is the usual way of slowing or stopping a wind turbine
    type Status_Tip_Brake_Type is (Activated, Deactivated);
 
    -- The mechanical brake is only used as a backup system for the aerodynamic braking system.
@@ -60,10 +62,13 @@ package Wind_Turbine is
    function Is_Safe (Status : Status_Turbine_Type) return Boolean is
      (if
         (Integer (Status.Speed_Measured) > Critical_Wind_Speed) or
-        (Integer (Status.Speed_Measured) < Startup_Wind_Speed)
+        (Integer (Status.Speed_Measured) <= Startup_Wind_Speed)
       then
         Status.Status_Tip_Brake = Activated and
         Status.Status_Mechanical_Brake = Activated
+      elsif (Integer (Status.Speed_Measured) > Shutdown_Wind_Speed) then
+        Status.Status_Tip_Brake = Activated and
+        Status.Status_Mechanical_Brake = Deactivated
       else Status.Status_Tip_Brake = Deactivated and
         Status.Status_Mechanical_Brake = Deactivated);
 
@@ -73,8 +78,8 @@ package Wind_Turbine is
       Post    => Is_Safe (Status_Turbine);
 
    procedure Initialize with
-     Global => (Output => (Standard_Output, Standard_Input, Status_Turbine)),
-     Depends => ((Standard_Output,Standard_Input,Status_Turbine)=> null),
-   Post => Is_Safe(Status_Turbine);
+      Global  => (Output => (Standard_Output, Standard_Input, Status_Turbine)),
+      Depends => ((Standard_Output, Standard_Input, Status_Turbine) => null),
+      Post    => Is_Safe (Status_Turbine);
 
 end Wind_Turbine;
