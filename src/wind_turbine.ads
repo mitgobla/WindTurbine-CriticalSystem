@@ -1,3 +1,4 @@
+-- By Benjamin Dodd (1901386)
 pragma SPARK_Mode (On);
 
 with SPARK.Text_IO; use SPARK.Text_IO;
@@ -59,6 +60,10 @@ package Wind_Turbine is
       Global  => (In_Out => Standard_Output, Input => Status_Turbine),
       Depends => (Standard_Output => (Standard_Output, Status_Turbine));
 
+   -- The wind turbine is in a safe state when
+   -- - If the wind speed is below the startup speed or above the critical speed, then both brakes are applied
+   -- - If the wind speed is above the shutdown speed, then only the tip brake is applied
+   -- - Otherwise, both brakes are disengaged
    function Is_Safe (Status : Status_Turbine_Type) return Boolean is
      (if
         (Integer (Status.Speed_Measured) > Critical_Wind_Speed) or

@@ -1,3 +1,4 @@
+-- By Benjamin Dodd (1901386)
 pragma SPARK_Mode (On);
 
 with AS_Io_Wrapper; use AS_Io_Wrapper;
@@ -46,6 +47,7 @@ package body Wind_Turbine is
       end case;
    end Status_Mechanical_Brake_To_String;
 
+   -- Print the current status of the wind turbine system
    procedure Print_Status is
    begin
       AS_Put ("Wind speed (mph) = ");
@@ -60,6 +62,8 @@ package body Wind_Turbine is
            (Status_Turbine.Status_Mechanical_Brake));
    end Print_Status;
 
+
+   -- Monitor turbine brake systems and ensure their states are correct for the current wind speed
    procedure Monitor_Turbine is
       Speed : Integer;
    begin
@@ -82,6 +86,7 @@ package body Wind_Turbine is
       end if;
    end Monitor_Turbine;
 
+   -- Initialize the AS IO package and wind turbine status
    procedure Initialize is
    begin
       AS_Init_Standard_Input;
